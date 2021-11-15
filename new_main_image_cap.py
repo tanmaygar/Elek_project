@@ -79,53 +79,43 @@ faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 # load the face mask detector model from disk
 maskNet = load_model("mask_detector2.model")
 
-
-
-#video stream starting
 cap = VideoStream(src=0).start()
 
-pred_value = 0
-exit_num = 0
-
-
 while True:
-    frame = cap.read()
-
-    
-    (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
-    for (box, pred) in zip(locs, preds):
-        (mask, withoutMask) = pred
-        label = "Mask" if mask > withoutMask else "No Mask"
-
-        if label == "Mask":
-            pred_value = pred_value + (mask * 100)
-
-
-
-
-
-    exit_num += 1
-    #imgname = "images/mask/{}.jpg".format(str(uuid.uuid1()))
-    cv2.imwrite(r"img_cap\{}.jpg".format(str(uuid.uuid1())), frame)
-    cv2.imshow("Window Camera",frame)
-
-    
-
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q") or exit_num == 10:
-        #for deleting the photos
-        folder_name = r"img_cap"
-        for filename in os.listdir(folder_name):
-            path_file = os.path.join(folder_name, filename)
-            os.remove(path_file)
-        #cv2.imwrite(r"img_cap\{}.jpg".format(str(uuid.uuid1())), frame)
+    distance = input("Enter distance: ")
+    if distance == "w":
         break
+    else:
+        distance = int(distance)
+        
+    if distance <= 20:
+        pred_value = 0
+        exit_num = 0
 
-pred_value = pred_value/10
-print(pred_value)
-if pred_value > 90:
-    print("Allowed")
-else:
-    print("Get out")
+        while True:
+            frame = cap.read()
+            (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
+            for (box, pred) in zip(locs, preds):
+                (mask, withoutMask) = pred
+                label = "Mask" if mask > withoutMask else "No Mask"
+
+                if label == "Mask":
+                    pred_value = pred_value + (mask * 100)
+            
+            exit_num += 1
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("q") or exit_num == 10:
+                break
+        
+        pred_value = pred_value/10
+        print(pred_value)
+        if pred_value > 90:
+            print("Enter Please")
+        else:
+            print("Not allowed")
+
+
+
+
 cv2.destroyAllWindows()
 cap.stop()
